@@ -1,5 +1,6 @@
 ﻿using LiveKritzel.Server.Models;
 using LiveKritzel.Server.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
@@ -11,55 +12,57 @@ using System.Threading.Tasks;
 
 namespace LiveKritzel.Server.Hubs
 {
-    public class GameHub : Hub
+    public class GameHub : Hub<IGameHubClient>
     {
-        private readonly GameManager _scoreManager;
-        private readonly DrawingService _drawingService;
-        private readonly PlayerManager _playerManager;
+        private readonly GameManager _gameManager;
+        private readonly WordManager _wordManager;
 
-        public GameHub(GameManager scoreManager, DrawingService drawingService, PlayerManager playerManager)
+        public GameHub(GameManager gameManager, WordManager wordManager)
         {
-            _scoreManager = scoreManager;
-            _drawingService = drawingService;
-            _playerManager = playerManager;
+            _gameManager = gameManager;
+            _wordManager = wordManager;
         }
 
-        public IAsyncEnumerable<Point> GetDrawingStream()
+
+        public async Task SendPoint(Point point)
         {
-            return _drawingService.GetDrawingStream(cancellationToken);
+            await Clients.Others.ReceivePoint(point)
+                .ConfigureAwait(false);
         }
 
-        public async Task SetDrawingStream(IAsyncEnumerable<Point> pointStream)
+        public async Task SendChatMessage(string message)
         {
-            if (pointStream is null)
+            if (!_gameManager.PredictWord(message, GetName()))
             {
-                throw new ArgumentNullException(nameof(pointStream));
-            }
-
-            await foreach (var item in pointStream)
-            {
-                _drawingService.PublishPoint(item);
+                await Clients.Others.ReceiveChatMessage(GetName(), message)
+                    .ConfigureAwait(false);
             }
         }
 
-        public Task GetChatMessage(string message)
+        public async Task JoinGame(string name)
         {
+            Context.Items["name"] = name;
+            await Clients.Others.ReceivePlayerJoined(name)
+                .ConfigureAwait(false);
+        }
+
+        public void ChooseWord(string word)
+        {
+            _wordManager.SetActualWord(word);
+            _gameManager.StartRound();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        { 
+            await Clients.Others.ReceivePlayerLeft(GetName())
+               .ConfigureAwait(false);
 
         }
 
-        public Task JoinGame(string name)
+
+        private string GetName()
         {
-            _playerManager.JoinGame(name, Context.ConnectionId);
-            return Task.CompletedTask;
+            return (string)Context.Items["name"];
         }
-
-
-
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            _playerManager.LeafGame(Context.ConnectionId);
-            return Task.CompletedTask;
-        }
-
     }
 }

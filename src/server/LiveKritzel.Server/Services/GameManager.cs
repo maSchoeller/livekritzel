@@ -11,90 +11,112 @@ namespace LiveKritzel.Server.Services
     public class GameManager
     {
         private readonly IHubContext<GameHub> _context;
-        private readonly PlayerManager _playerManager;
         private readonly WordManager _wordManager;
+        private readonly List<(string Name, string ConId)> _users;
+
 
         private CancellationTokenSource _cts;
         private Task _actualDispatcher;
 
         private (string Name, string ConId) _actualPlayer;
 
-
+        private bool playerIsChoosing = false;
         public int RoundDuration { get; set; } = 80;
 
-        public bool IsRunning { get; private set; }
-        public GameManager(IHubContext<GameHub> context, PlayerManager playerManager, WordManager wordManager)
+        public GameManager(IHubContext<GameHub> context, WordManager wordManager)
         {
             _context = context;
-            _playerManager = playerManager;
             _wordManager = wordManager;
-            IsRunning = false;
+            _users = new List<(string Name, string ConId)>();
         }
 
-        public void PredictWord(string word, string conId)
+        public bool PredictWord(string word, string name)
         {
             if (_wordManager.ActualWord == word)
             {
-                _context.Clients.All.SendAsync("GetTheWord", _playerManager.GetNameById(conId));
+                _context.Clients.All.SendAsync("PlayerGetTheWord", name);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
+        public void PlayerJoinedTheGame(string name, string conId)
+        {
+            _users.Add((name, conId));
+            if (_users.Count == 1)
+            {
+                StartGame();
+            }
+        }
+
+        public void PlayerLeftTheGame(string conId)
+        {
+            _users.Remove(_users.FirstOrDefault(u => u.ConId == conId));
+            if (_users.Count == 0)
+            {
+                StopGame();
+            }
+        }
+
+
         public void StartGame()
         {
-            if (!IsRunning)
-            {
-                _cts = new CancellationTokenSource();
-                _actualDispatcher = new Task(GameLoop, _cts.Token, TaskCreationOptions.LongRunning);
-                //Start Game
-                IsRunning = true;
-
-            }
+            _cts = new CancellationTokenSource();
+            _actualDispatcher = new Task(GameLoop, _cts.Token, TaskCreationOptions.LongRunning);
+            //Start Game
         }
 
         public void StopGame()
         {
-            if (IsRunning && _playerManager.PlayerCount == 1)
-            {
-                _cts.Cancel();
-                //Stop Gamne
-                IsRunning = false;
-            }
+            _cts.Cancel();
+            //Stop Gamne
         }
 
+        public void StartRound()
+        {
+            playerIsChoosing = false;
+        }
 
 
         private async void GameLoop()
         {
             var token = _cts.Token;
+            var rnd = new Random();
             while (token.IsCancellationRequested)
             {
+
+                while (playerIsChoosing)
+                {
+                    await Task.Delay(10)
+                        .ConfigureAwait(false);
+                }
+
+                await _context.Clients.All.SendAsync("NewRoundIsStarted", _wordManager.ActualWord.Length, RoundDuration)
+                    .ConfigureAwait(false);
                 var i = RoundDuration;
                 for (int d = 0; d < i; d++)
                 {
-                    if (d% (RoundDuration / 4) == 0)
+                    if (d % (RoundDuration / 4) == 0)
                     {
-                        //Send Tipp
+                        //Send Tipp to predict
                     }
                     await Task.Delay(1000)
                         .ConfigureAwait(false);
-                    //Update Time
                 }
 
-                await _context.Clients.All.SendAsync("RoundOver")
+                await _context.Clients.All.SendAsync("RoundIsFinshed", _wordManager.ActualWord)
                     .ConfigureAwait(false);
-                var player = _playerManager.NexPlayer();
-                _actualPlayer = player;
+                playerIsChoosing = true;
+                var nextPlayer = _users[rnd.Next(0, _users.Count - 1)];
+                await _context.Clients.Client(nextPlayer.ConId).SendAsync("StartChoosing", _wordManager.GetWordsToChoose(3))
+                    .ConfigureAwait(false);
+
             }
 
         }
-      
-
-
-        //public IEnumerable<(int Sore, string ConId, string Name)> GetScores()
-        //{
-
-        //}
-
     }
 
 }
