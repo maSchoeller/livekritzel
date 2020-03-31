@@ -12,5 +12,6 @@ namespace LiveKritzel.Server.Models
         public Point To { get; set; }
 
         public string Color { get; set; }
+        public int Width { get; set; }
     }
 }
