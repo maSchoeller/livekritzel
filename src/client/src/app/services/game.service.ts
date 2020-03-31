@@ -4,6 +4,7 @@ import { environment as env } from 'src/environments/environment';
 import { Line } from '../model/Line';
 import { Point } from '../model/Point';
 import { Subject } from 'rxjs';
+import { Message } from '../model/Message';
 
 
 @Injectable({
@@ -19,6 +20,9 @@ export class GameService {
 
 	private receiveFillSubject = new Subject<string>();
 	public receiveFill$ = this.receiveFillSubject.asObservable();
+
+	private receiveChatMessageSubject = new Subject<Message>();
+	public receiveChatMessage$ = this.receiveChatMessageSubject.asObservable();
 
 
 	private connection: signalR.HubConnection;
@@ -38,6 +42,12 @@ export class GameService {
 			this.receiveFillSubject.next(color);
 		});
 
+		this.connection.on('receiveChatMessage', (name: string, message: string) => {
+			this.receiveChatMessageSubject.next({
+				sender: name,
+				content: message
+			});
+		});
 
 		this.startConnection();
 	}
@@ -66,5 +76,10 @@ export class GameService {
 
 	public async sendFill(color: string) {
 		return this.connection.invoke('sendFillCanvas', color);
+	}
+
+
+	public async sendChatMessage(message: string) {
+		return this.connection.invoke('SendChatMessage', message);
 	}
 }
