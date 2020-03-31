@@ -1,0 +1,26 @@
+:host {
+	padding: 2rem;
+	text-align: center;
+	background-color: #eee;
+}
+
+h2 {
+	margin-bottom: 1rem;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	width: 200px;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.player {
+	padding: 1rem;
+	word-break: break-word;
+	background-color: #fff;
+
+	&:nth-child(even) {
+		background-color: #f9f9f9;
+	}
+}
