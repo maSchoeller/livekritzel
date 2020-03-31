@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using LiveKritzel.Server.Hubs;
+using LiveKritzel.Server.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +31,9 @@ namespace LiveKritzel.Server
         {
             services.AddControllers();
             services.AddSignalR();
+            services.AddSingleton<GameManager>();
+            services.AddSingleton<WordManager>();
+            services.AddSingleton<WordsInMemoryDatabase>();
             services.AddSpaStaticFiles(conf =>
             {
                 conf.RootPath = spaPath;
