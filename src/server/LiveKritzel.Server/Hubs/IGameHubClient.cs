@@ -9,7 +9,8 @@ namespace LiveKritzel.Server.Hubs
     public interface IGameHubClient
     {
         Task ReceiveLine(Line line);
-        Task ClearCanvas();
+        Task ReceiveClearCanvas();
+        Task ReceiveFillCanvas(string color);
         Task ReceiveChatMessage(string name, string message);
 
         Task ReceivePlayerJoined(string name);

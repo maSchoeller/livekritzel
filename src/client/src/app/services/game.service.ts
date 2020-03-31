@@ -17,6 +17,9 @@ export class GameService {
 	private receiveClearSubject = new Subject();
 	public receiveClear$ = this.receiveClearSubject.asObservable();
 
+	private receiveFillSubject = new Subject<string>();
+	public receiveFill$ = this.receiveFillSubject.asObservable();
+
 
 	private connection: signalR.HubConnection;
 
@@ -27,8 +30,12 @@ export class GameService {
 			this.receiveLineSubject.next(line);
 		});
 
-		this.connection.on('clearCanvas', () => {
+		this.connection.on('receiveClearCanvas', () => {
 			this.receiveClearSubject.next();
+		});
+
+		this.connection.on('receiveFillCanvas', color => {
+			this.receiveFillSubject.next(color);
 		});
 
 
@@ -55,5 +62,9 @@ export class GameService {
 
 	public async sendClear() {
 		return this.connection.invoke('clearCanvas');
+	}
+
+	public async sendFill(color: string) {
+		return this.connection.invoke('sendFillCanvas', color);
 	}
 }

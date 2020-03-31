@@ -66,6 +66,11 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 		this.game.receiveClear$.subscribe(() => {
 			this.cx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 		});
+
+		this.game.receiveFill$.subscribe(color => {
+			this.cx.fillStyle = color;
+			this.cx.fillRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		});
 	}
 
 
@@ -159,9 +164,10 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 		}
 	}
 
-	public fill() {
+	public async fill() {
 		this.cx.fillStyle = this.selectedColor.value;
 		this.cx.fillRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		await this.game.sendFill(this.selectedColor.value);
 	}
 
 	public async clear() {
