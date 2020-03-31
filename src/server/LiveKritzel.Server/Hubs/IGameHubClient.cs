@@ -9,6 +9,8 @@ namespace LiveKritzel.Server.Hubs
     public interface IGameHubClient
     {
         Task ReceiveLine(Line line);
+        Task ReceiveClearCanvas();
+        Task ReceiveFillCanvas(string color);
         Task ReceiveChatMessage(string name, string message);
 
         Task ReceivePlayerJoined(string name);
@@ -18,5 +20,6 @@ namespace LiveKritzel.Server.Hubs
         Task StartChoosing(string[] words);
         Task RoundIsFinshed(string word);
         Task NewRoundIsStarted(int wordcount, int duration);
+
     }
 }

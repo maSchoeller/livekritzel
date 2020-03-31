@@ -1,6 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild, Input, AfterViewInit } from '@angular/core';
 import { fromEvent } from 'rxjs';
 import { switchMap, takeUntil, pairwise } from 'rxjs/operators';
+import { GameService } from '../services/game.service';
 
 interface Color {
 	name: string;
@@ -17,7 +18,7 @@ interface Point {
 	templateUrl: './drawing-board.component.html',
 	styleUrls: ['./drawing-board.component.scss']
 })
-export class DrawingBoardComponent implements AfterViewInit {
+export class DrawingBoardComponent implements OnInit, AfterViewInit {
 
 	colors: Color[] = [
 		{ name: 'black', value: 'rgb(0, 0, 0)' },
@@ -57,16 +58,30 @@ export class DrawingBoardComponent implements AfterViewInit {
 	private cx: CanvasRenderingContext2D;
 
 
-	constructor() { }
+	constructor(private game: GameService) {
+		this.game.receiveLine$.subscribe(line => {
+			this.drawOnCanvas(line.from, line.to, line.color, line.width);
+		});
+
+		this.game.receiveClear$.subscribe(() => {
+			this.cx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		});
+
+		this.game.receiveFill$.subscribe(color => {
+			this.cx.fillStyle = color;
+			this.cx.fillRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		});
+	}
+
+
+	ngOnInit(): void { }
 
 
 	ngAfterViewInit() {
 		const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
 		this.cx = canvasEl.getContext('2d');
 
-		this.cx.lineWidth = this.brushSize;
 		this.cx.lineCap = 'round';
-		this.cx.strokeStyle = this.selectedColor?.value ?? 'black';
 
 		this.captureEvents(canvasEl);
 		this.selectedColor = this.colors[0];
@@ -127,15 +142,20 @@ export class DrawingBoardComponent implements AfterViewInit {
 				};
 
 				// this method we'll implement soon to do the actual drawing
-				this.drawOnCanvas(prevPos, currentPos);
+				this.drawOnCanvas(prevPos, currentPos, this.selectedColor.value, this.brushSize);
+				this.game.sendLine({ x: prevPos.x, y: prevPos.y }, { x: currentPos.x, y: currentPos.y }, this.selectedColor.value, this.brushSize);
 			});
 
 	}
 
-	private drawOnCanvas(prevPos: Point, currentPos: { x: number, y: number }) {
+	private drawOnCanvas(prevPos: Point, currentPos: Point, color: string, width: number) {
 		if (!this.cx) { return; }
 
+
 		this.cx.beginPath();
+
+		this.cx.lineWidth = width;
+		this.cx.strokeStyle = color;
 
 		if (prevPos) {
 			this.cx.moveTo(prevPos.x, prevPos.y); // from
@@ -144,13 +164,15 @@ export class DrawingBoardComponent implements AfterViewInit {
 		}
 	}
 
-	public fill() {
+	public async fill() {
 		this.cx.fillStyle = this.selectedColor.value;
 		this.cx.fillRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		await this.game.sendFill(this.selectedColor.value);
 	}
 
-	public reset() {
+	public async clear() {
 		this.cx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		await this.game.sendClear();
 	}
 
 }
