@@ -17,5 +17,7 @@ namespace LiveKritzel.Server.Controllers
         {
             return "Server is Running";
         }
+
+
     }
 }
