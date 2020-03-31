@@ -30,6 +30,11 @@ namespace LiveKritzel.Server.Hubs
                 .ConfigureAwait(false);
         }
 
+        public async Task ClearCanvas()
+        {
+            await Clients.Others.ClearCanvas().ConfigureAwait(false);
+        }
+
         public async Task SendChatMessage(string message)
         {
             if (!_gameManager.PredictWord(message, GetName()))

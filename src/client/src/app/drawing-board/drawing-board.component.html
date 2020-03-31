@@ -6,11 +6,11 @@
 
 	</div>
 	<div class="brush-preview">
-		<div class="size" [style.height]="brushSize * 1.5 + 'px'" [style.width]="brushSize * 1.5 + 'px'" [style.background-color]="selectedColor?.value"></div>
+		<div class="size" [style.height]="brushSize * 1.5 + 'px'" [style.width]="brushSize * 1.5 + 'px'" [style.background]="selectedColor?.value"></div>
 	</div>
 	<div class="colors">
 		<div class="color" *ngFor="let color of colors" [class.active]="selectedColor === color" [style.background]="color.value" (click)="selectColor(color)"></div>
 	</div>
 	<button (click)="fill()">Fill</button>
-	<button (click)="reset()">Clear</button>
+	<button (click)="clear()">Clear</button>
 </div>
