@@ -18,10 +18,10 @@ namespace LiveKritzel.Server.Services
         private CancellationTokenSource _cts;
         private Task _actualDispatcher;
 
-        private (string Name, string ConId) _actualPlayer;
 
         private bool playerIsChoosing = false;
         public int RoundDuration { get; set; } = 80;
+        public (string Name, string ConId) ActualPlayer { get; private set; }
 
         public GameManager(IHubContext<GameHub> context, WordManager wordManager)
         {

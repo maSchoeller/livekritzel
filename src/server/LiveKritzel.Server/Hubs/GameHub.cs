@@ -26,8 +26,12 @@ namespace LiveKritzel.Server.Hubs
 
         public async Task SendLine(Line line)
         {
-            await Clients.Others.ReceiveLine(line)
-                .ConfigureAwait(false);
+            if (_gameManager.ActualPlayer.ConId == Context.ConnectionId)
+            {
+                await Clients.Others.ReceiveLine(line)
+                    .ConfigureAwait(false);
+
+            }
         }
 
         public async Task SendChatMessage(string message)
@@ -53,7 +57,7 @@ namespace LiveKritzel.Server.Hubs
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
-        { 
+        {
             await Clients.Others.ReceivePlayerLeft(GetName())
                .ConfigureAwait(false);
 
