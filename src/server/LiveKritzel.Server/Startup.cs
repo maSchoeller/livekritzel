@@ -15,11 +15,13 @@ namespace LiveKritzel.Server
 {
     public class Startup
     {
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        private readonly string spaPath = "dist/LiveKritzel";
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -29,7 +31,7 @@ namespace LiveKritzel.Server
             services.AddSignalR();
             services.AddSpaStaticFiles(conf =>
             {
-                conf.RootPath = "dist";
+                conf.RootPath = spaPath;
             });
         }
 
@@ -72,7 +74,7 @@ namespace LiveKritzel.Server
                 app.UseSpa(spa =>
                 {
 
-                    spa.Options.SourcePath = "dist";
+                    spa.Options.SourcePath = spaPath;
                 });
 
             }
