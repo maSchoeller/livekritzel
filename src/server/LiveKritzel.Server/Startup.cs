@@ -27,6 +27,10 @@ namespace LiveKritzel.Server
         {
             services.AddControllers();
             services.AddSignalR();
+            services.AddSpaStaticFiles(conf =>
+            {
+                conf.RootPath = "dist";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,9 +40,25 @@ namespace LiveKritzel.Server
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseSpaStaticFiles();
+
+            }
 
             app.UseRouting();
 
+
+            if (env.IsDevelopment())
+            {
+                app.UseCors(builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            }
             //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -46,6 +66,16 @@ namespace LiveKritzel.Server
                 endpoints.MapControllers();
                 endpoints.MapHub<GameHub>("/hubs/game");
             });
+
+            if (!env.IsDevelopment())
+            {
+                app.UseSpa(spa =>
+                {
+
+                    spa.Options.SourcePath = "dist";
+                });
+
+            }
         }
     }
 }

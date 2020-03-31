@@ -24,9 +24,9 @@ namespace LiveKritzel.Server.Hubs
         }
 
 
-        public async Task SendPoint(Point point)
+        public async Task SendLine(Line line)
         {
-            await Clients.Others.ReceivePoint(point)
+            await Clients.Others.ReceiveLine(line)
                 .ConfigureAwait(false);
         }
 

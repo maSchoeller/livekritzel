@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 
 namespace LiveKritzel.Server.Models
 {
-    public class Point
+    public class Line
     {
-        public int X { get; set; }
-        public int Y { get; set; }
 
+        public Point From { get; set; }
+        public Point To { get; set; }
 
+        public string Color { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace LiveKritzel.Server.Hubs
 {
     public interface IGameHubClient
     {
-        Task ReceivePoint(Point point);
+        Task ReceiveLine(Line line);
         Task ReceiveChatMessage(string name, string message);
 
         Task ReceivePlayerJoined(string name);
