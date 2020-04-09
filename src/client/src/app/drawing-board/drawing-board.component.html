@@ -1,4 +1,19 @@
-<canvas width="1200" height="700" #canvas></canvas>
+<div class="canvas-container">
+	<canvas width="1200" height="700" #canvas [class.disabled]="!canDraw"></canvas>
+	<div class="choose-word-container" *ngIf="isChoosing">
+		<p class="title">Choose a word</p>
+		<div class="words">
+			<button class="word" *ngFor="let word of words" (click)="chooseWord(word)">{{ word }}</button>
+		</div>
+	</div>
+
+	<div class="debug-controls" *ngIf="isDev" style="position: absolute; top: 4px; left: 4px">
+		<button (click)="isChoosing = true">Show Word Choose</button>
+		<button (click)="canDraw = !canDraw">Toggle CanDraw</button>
+	</div>
+
+</div>
+<p class="chosen-word">{{ chosenWord || ' ' }}</p>
 <div class="controls">
 	<div class="size">
 		<button (click)="incrementBrushSize()">+</button>

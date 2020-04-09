@@ -9,6 +9,8 @@ import { GameService } from '../services/game.service';
 })
 export class ChatComponentComponent implements OnInit {
 
+
+
 	chat: Message[] = [
 		{
 			sender: 'Mario',
@@ -22,7 +24,7 @@ export class ChatComponentComponent implements OnInit {
 	constructor(private game: GameService) { }
 
 	ngOnInit(): void {
-		this.game.receiveChatMessage$.subscribe(m => {
+		this.game.chatMessage$.subscribe(m => {
 			this.addMessage(m);
 		});
 	}
@@ -31,17 +33,6 @@ export class ChatComponentComponent implements OnInit {
 	addMessage(message: Message) {
 		this.chat.push(message);
 		setTimeout(() => this.chatContainer.nativeElement.scrollTo(0, this.chatContainer.nativeElement.scrollHeight), 0);
-	}
-
-
-	private makeid(length) {
-		let result           = '';
-		const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-		const charactersLength = characters.length;
-		for (let i = 0; i < length; i++ ) {
-			result += characters.charAt(Math.floor(Math.random() * charactersLength));
-		}
-		return result;
 	}
 
 

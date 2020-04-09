@@ -1,18 +1,9 @@
 <h2>Player</h2>
 <div class="list">
-	<div class="player">
-		Mario
+	<div class="player self">
+		{{ playerName | async }}
 	</div>
-	<div class="player">
-		Marvin
-	</div>
-	<div class="player">
-		Moris
-	</div>
-	<div class="player">
-		Hannah
-	</div>
-	<div class="player">
-		Sehr langer Name den Jonathan wahrscheinlich wählen wird
+	<div class="player" *ngFor="let player of players">
+		{{ player }}
 	</div>
 </div>
