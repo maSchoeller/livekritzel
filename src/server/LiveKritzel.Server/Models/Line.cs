@@ -8,10 +8,10 @@ namespace LiveKritzel.Server.Models
     public class Line
     {
 
-        public Point From { get; set; }
-        public Point To { get; set; }
+        public Point From { get; set; } = new Point();
+        public Point To { get; set; } = new Point();
 
-        public string Color { get; set; }
+        public string Color { get; set; } = string.Empty;
         public int Width { get; set; }
     }
 }

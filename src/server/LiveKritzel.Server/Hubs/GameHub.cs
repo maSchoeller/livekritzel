@@ -36,40 +36,58 @@ namespace LiveKritzel.Server.Hubs
 
         public async Task ClearCanvas()
         {
-            await Clients.Others.ReceiveClearCanvas().ConfigureAwait(false);
+            if (_gameManager.ActualPlayer.ConId == Context.ConnectionId)
+            {
+                await Clients.Others.ReceiveClearCanvas().ConfigureAwait(false);
+            }
         }
 
         public async Task SendFillCanvas(string color)
         {
-            await Clients.Others.ReceiveFillCanvas(color).ConfigureAwait(false);
+            if (_gameManager.ActualPlayer.ConId == Context.ConnectionId)
+            {
+                await Clients.Others.ReceiveFillCanvas(color).ConfigureAwait(false);
+            }
         }
 
-        public async Task SendChatMessage(string message)
+        public async Task<bool> SendChatMessage(string message)
         {
             if (!_gameManager.PredictWord(message, GetName()))
             {
                 await Clients.Others.ReceiveChatMessage(GetName(), message)
                     .ConfigureAwait(false);
+                return true;
             }
+            return false;
         }
 
-        public async Task JoinGame(string name)
+        public async Task<IEnumerable<string>> JoinGame(string name)
         {
             Context.Items["name"] = name;
+            if (_gameManager.Users.Count() == 2)
+                //Todo: maybe later solve concurrency problem.
+            {
+                _gameManager.StartGame();
+            }
             await Clients.Others.ReceivePlayerJoined(name)
                 .ConfigureAwait(false);
+            return _gameManager.Users;
         }
 
         public void ChooseWord(string word)
         {
-            _wordManager.SetActualWord(word);
-            _gameManager.StartRound();
+            if (_gameManager.ActualPlayer.ConId == Context.ConnectionId)
+            {
+                _wordManager.SetActualWord(word);
+                _gameManager.StartRound();
+            }
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             await Clients.Others.ReceivePlayerLeft(GetName())
                .ConfigureAwait(false);
+            //Todo: stop if the last player left the game
 
         }
 
