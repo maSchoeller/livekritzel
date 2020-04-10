@@ -99,6 +99,7 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 
 		this.game.roundFinished$.subscribe(word => {
 			this.canDraw = false;
+			this.guessWord = word;
 		});
 		this.game.chooseWords$.subscribe((words) => {
 			this.words = words;
