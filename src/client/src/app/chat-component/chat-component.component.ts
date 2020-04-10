@@ -9,8 +9,6 @@ import { GameService } from '../services/game.service';
 })
 export class ChatComponentComponent implements OnInit {
 
-
-
 	chat: Message[] = [
 		{
 			sender: 'Mario',

@@ -12,6 +12,9 @@ import { Message } from '../model/Message';
 })
 export class GameService {
 
+	private activePlayersSubject = new Subject<string[]>();
+	public activePlayers$ = this.activePlayersSubject.asObservable();
+
 	private playerNameSubject = new Subject<string>();
 	public playerName$ = this.playerNameSubject.asObservable();
 
@@ -39,31 +42,40 @@ export class GameService {
 	private playerLeftSubject = new Subject<string>();
 	public playerLeft$ = this.playerLeftSubject.asObservable();
 
+	private newRoundSubject = new Subject<{wordCount: number, duration: number}>();
+	public newRound$ = this.newRoundSubject.asObservable();
+
 
 	private connection: signalR.HubConnection;
 
 	constructor() {
 		this.connection = new signalR.HubConnectionBuilder().withUrl(env.url + 'hubs/game').build();
 
+
 		this.connection.on('receiveLine', (line: Line) => {
 			this.receiveLineSubject.next(line);
 		});
+
 
 		this.connection.on('receiveClearCanvas', () => {
 			this.clearSubject.next();
 		});
 
+
 		this.connection.on('receiveFillCanvas', color => {
 			this.fillSubject.next(color);
 		});
+
 
 		this.connection.on('roundFinished', (word: string) => {
 			this.roundFinishedSubject.next(word);
 		});
 
+
 		this.connection.on('startChoosing', (words: string[]) => {
 			this.chooseWordsSubject.next(words);
 		});
+
 
 		this.connection.on('receiveChatMessage', (name: string, message: string) => {
 			this.chatMessageSubject.next({
@@ -77,8 +89,14 @@ export class GameService {
 			this.playerJoinedSubject.next(playerName);
 		});
 
+
 		this.connection.on('receivePlayerLeft', (playerName: string) => {
 			this.playerLeftSubject.next(playerName);
+		});
+
+
+		this.connection.on('newRoundIsStarted', (wordCount: number, duration: number) => {
+			this.newRoundSubject.next({ wordCount, duration });
 		});
 	}
 
@@ -104,6 +122,7 @@ export class GameService {
 	public async sendClear() {
 		return this.connection.invoke('clearCanvas');
 	}
+
 
 	public async sendFill(color: string) {
 		return this.connection.invoke('sendFillCanvas', color);
