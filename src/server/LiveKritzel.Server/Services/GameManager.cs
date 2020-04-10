@@ -91,7 +91,6 @@ namespace LiveKritzel.Server.Services
         private async void GameLoop()
         {
             var token = _cts.Token;
-            var rnd = new Random();
             while (!token.IsCancellationRequested)
             {
                 playerIsChoosing = true;

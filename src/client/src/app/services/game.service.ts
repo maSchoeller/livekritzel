@@ -52,7 +52,11 @@ export class GameService {
 	private connection: signalR.HubConnection;
 
 	constructor() {
-		this.connection = new signalR.HubConnectionBuilder().withUrl(env.url + 'hubs/game').build();
+		this.connection = new signalR.HubConnectionBuilder().withUrl(env.url + 'hubs/game',
+		{
+			skipNegotiation: false,
+			transport: signalR.HttpTransportType.WebSockets
+		}).build();
 
 
 		this.connection.on('receiveLine', (line: Line) => {
