@@ -1,7 +1,8 @@
 import { Component, OnInit, ElementRef, ViewChild, Input, AfterViewInit } from '@angular/core';
 import { fromEvent } from 'rxjs';
-import { switchMap, takeUntil, pairwise } from 'rxjs/operators';
+import { switchMap, takeUntil, pairwise, takeWhile } from 'rxjs/operators';
 import { GameService } from '../services/game.service';
+import { isDevMode } from '@angular/core';
 
 interface Color {
 	name: string;
@@ -20,6 +21,11 @@ interface Point {
 })
 export class DrawingBoardComponent implements OnInit, AfterViewInit {
 
+	isDev: boolean = isDevMode();
+
+	canDraw = false;
+	isChoosing = false;
+
 	colors: Color[] = [
 		{ name: 'black', value: 'rgb(0, 0, 0)' },
 		{ name: 'white', value: 'rgb(255, 255, 255)' },
@@ -31,7 +37,15 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 		{ name: 'blue', value: 'rgb(0, 0, 255)' },
 		{ name: 'purple', value: 'rgb(255, 0, 255)' },
 	];
-	private _selectedColor: Color;
+
+	words: string[] = [
+		'Balloon',
+		'Gameboy',
+		'Watermelon'
+	];
+	chosenWord: string;
+
+	private _selectedColor: Color = this.colors[0];
 	public get selectedColor() {
 		return this._selectedColor;
 	}
@@ -63,13 +77,18 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 			this.drawOnCanvas(line.from, line.to, line.color, line.width);
 		});
 
-		this.game.receiveClear$.subscribe(() => {
+		this.game.clear$.subscribe(() => {
 			this.cx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 		});
 
-		this.game.receiveFill$.subscribe(color => {
+		this.game.fill$.subscribe(color => {
 			this.cx.fillStyle = color;
 			this.cx.fillRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+		});
+
+		this.game.roundFinished$.subscribe(word => {
+			this.canDraw = false;
+			this.clear();
 		});
 	}
 
@@ -84,7 +103,6 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 		this.cx.lineCap = 'round';
 
 		this.captureEvents(canvasEl);
-		this.selectedColor = this.colors[0];
 	}
 
 	selectColor(color: Color) {
@@ -128,22 +146,24 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 				})
 			)
 			.subscribe((res: [MouseEvent, MouseEvent]) => {
-				const rect = canvasEl.getBoundingClientRect();
+				if (this.canDraw) {
+					const rect = canvasEl.getBoundingClientRect();
 
-				// previous and current position with the offset
-				const prevPos = {
-					x: res[0].clientX - rect.left,
-					y: res[0].clientY - rect.top
-				};
+					// previous and current position with the offset
+					const prevPos = {
+						x: res[0].clientX - rect.left,
+						y: res[0].clientY - rect.top
+					};
 
-				const currentPos = {
-					x: res[1].clientX - rect.left,
-					y: res[1].clientY - rect.top
-				};
+					const currentPos = {
+						x: res[1].clientX - rect.left,
+						y: res[1].clientY - rect.top
+					};
 
-				// this method we'll implement soon to do the actual drawing
-				this.drawOnCanvas(prevPos, currentPos, this.selectedColor.value, this.brushSize);
-				this.game.sendLine({ x: prevPos.x, y: prevPos.y }, { x: currentPos.x, y: currentPos.y }, this.selectedColor.value, this.brushSize);
+					// this method we'll implement soon to do the actual drawing
+					this.drawOnCanvas(prevPos, currentPos, this.selectedColor.value, this.brushSize);
+					this.game.sendLine({ x: prevPos.x, y: prevPos.y }, { x: currentPos.x, y: currentPos.y }, this.selectedColor.value, this.brushSize);
+				}
 			});
 
 	}
@@ -173,6 +193,15 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 	public async clear() {
 		this.cx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 		await this.game.sendClear();
+	}
+
+
+	public async chooseWord(word: string) {
+		await this.game.chooseWord(word);
+		console.log('chose word: ', word);
+		this.isChoosing = false;
+		this.canDraw = true;
+		this.chosenWord = word;
 	}
 
 }

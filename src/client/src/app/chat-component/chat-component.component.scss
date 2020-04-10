@@ -12,6 +12,8 @@
 
 .chat {
 	flex-grow: 1;
+	overflow-y: auto;
+	margin-bottom: 0.5rem;
 }
 
 .message {

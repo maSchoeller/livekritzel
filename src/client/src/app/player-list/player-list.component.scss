@@ -18,6 +18,11 @@ h2 {
 	word-break: break-word;
 	background-color: #fbfbfb;
 
+
+	&.self {
+		font-weight: bold;
+	}
+
 	&:nth-child(even) {
 		background-color: #e9e9e9;
 	}

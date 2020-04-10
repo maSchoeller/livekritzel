@@ -1,7 +1,7 @@
-<div class="chat">
-	<div class="message">
-		<div class="name">Mario:</div>
-		<div class="content">Hallo Welt</div>
+<div class="chat" #chatContainer>
+	<div class="message" *ngFor="let m of chat">
+		<div class="name">{{ m.sender }}</div>
+		<div class="content">{{ m.content }}</div>
 	</div>
 </div>
-<input type="text" name="input" id="input">
+<input type="text" id="input" (keydown.enter)="sendMessage(input)" #input>
