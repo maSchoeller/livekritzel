@@ -30,7 +30,8 @@ namespace LiveKritzel.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSignalR();
+            services.AddSignalR()
+                .AddAzureSignalR();
             services.AddSingleton<GameManager>();
             services.AddSingleton<WordManager>();
             services.AddSingleton<WordsInMemoryDatabase>();
@@ -54,7 +55,7 @@ namespace LiveKritzel.Server
             }
 
             app.UseRouting();
-
+            app.UseAuthorization();
 
             if (env.IsDevelopment())
             {
@@ -71,7 +72,7 @@ namespace LiveKritzel.Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<GameHub>("/hubs/game");
+                endpoints.MapHub<GameHub>("hubs/game");
             });
 
             if (!env.IsDevelopment())
