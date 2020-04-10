@@ -84,8 +84,6 @@ namespace LiveKritzel.Server.Hubs
             _gameManager.PlayerLeftTheGame(Context.ConnectionId);
             await Clients.Others.ReceivePlayerLeft(GetName())
                .ConfigureAwait(false);
-            //Todo: stop if the last player left the game
-
         }
 
 

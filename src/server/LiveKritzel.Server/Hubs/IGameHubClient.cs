@@ -16,7 +16,7 @@ namespace LiveKritzel.Server.Hubs
         Task ReceivePlayerJoined(string name);
         Task ReceivePlayerLeft(string name);
 
-        Task PlayerGetTheWord(string name);
+        Task PlayerGotTheWord(string name, int score);
         Task StartChoosing(string[] words);
         Task RoundIsFinshed(string word);
         Task NewRoundIsStarted(string word, int duration);

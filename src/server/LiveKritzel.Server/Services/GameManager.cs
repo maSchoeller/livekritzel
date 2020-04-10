@@ -13,7 +13,8 @@ namespace LiveKritzel.Server.Services
         private readonly IHubContext<GameHub> _context;
         private readonly WordManager _wordManager;
         private readonly List<(string Name, string ConId)> _users;
-
+        private int _playerGuesses;
+        private int _actualPlayerNumber;
 
         private CancellationTokenSource _cts;
         private Task _actualDispatcher;
@@ -28,13 +29,16 @@ namespace LiveKritzel.Server.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _wordManager = wordManager ?? throw new ArgumentNullException(nameof(wordManager));
             _users = new List<(string Name, string ConId)>();
+            _playerGuesses = 0;
+            _actualPlayerNumber = 0;
         }
 
         public bool PredictWord(string word, string name)
         {
             if (_wordManager.ActualWord == word)
             {
-                _context.Clients.All.SendAsync("PlayerGetTheWord", name);
+                _context.Clients.All.SendAsync("PlayerGotTheWord", name);
+                _playerGuesses++;
                 return true;
             }
             else
@@ -56,7 +60,7 @@ namespace LiveKritzel.Server.Services
         public void PlayerLeftTheGame(string conId)
         {
             _users.Remove(_users.FirstOrDefault(u => u.ConId == conId));
-            if (_users.Count == 0)
+            if (_users.Count <= 1)
             {
                 StopGame();
             }
@@ -66,6 +70,7 @@ namespace LiveKritzel.Server.Services
         public void StartGame()
         {
             _cts = new CancellationTokenSource();
+            _actualPlayerNumber = 0;
             _actualDispatcher = new Task(GameLoop, _cts.Token, TaskCreationOptions.LongRunning);
             _actualDispatcher.Start();
             //Start Game
@@ -90,7 +95,13 @@ namespace LiveKritzel.Server.Services
             while (!token.IsCancellationRequested)
             {
                 playerIsChoosing = true;
-                ActualPlayer = _users[rnd.Next(0, _users.Count - 1)];
+                _playerGuesses = 0;
+                if (_actualPlayerNumber > _users.Count-1)
+                {
+                    _actualPlayerNumber = 0;
+                }
+                ActualPlayer = _users[_actualPlayerNumber];
+                _actualPlayerNumber++;
                 await _context.Clients.Client(ActualPlayer.ConId).SendAsync("StartChoosing", _wordManager.GetWordsToChoose(3))
                     .ConfigureAwait(false);
                 while (playerIsChoosing)
@@ -109,6 +120,8 @@ namespace LiveKritzel.Server.Services
                     }
                     await Task.Delay(1000)
                         .ConfigureAwait(false);
+                    if (_playerGuesses == _users.Count-1)
+                        break;
                 }
                 await _context.Clients.All.SendAsync("RoundIsFinshed", _wordManager.ActualWord)
                     .ConfigureAwait(false);

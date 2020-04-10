@@ -103,7 +103,7 @@ export class GameService {
 		});
 
 
-		this.connection.on('playerGotTheWord', playerName => {
+		this.connection.on('playerGotTheWord', (playerName, score) => {
 			this.playerGuessedWordSubject.next(playerName);
 		});
 	}
