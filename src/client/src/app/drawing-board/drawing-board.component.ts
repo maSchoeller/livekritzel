@@ -45,6 +45,8 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 	];
 	chosenWord: string;
 
+	guessWord: string;
+
 	private _selectedColor: Color = this.colors[0];
 	public get selectedColor() {
 		return this._selectedColor;
@@ -88,13 +90,13 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 
 		this.game.newRound$.subscribe(({word, duration}) => {
 			const mutedWord = word.replace(/\S/g, '_');
-			this.chosenWord = mutedWord;
+			this.chosenWord = undefined;
+			this.guessWord = mutedWord;
 			this.clear();
 		});
 
 		this.game.roundFinished$.subscribe(word => {
 			this.canDraw = false;
-			this.chosenWord = undefined;
 		});
 		this.game.chooseWords$.subscribe((words) => {
 			this.words = words;

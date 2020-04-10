@@ -1,3 +1,4 @@
+<p class="guess-word">{{ guessWord || '' }}</p>
 <div class="canvas-container">
 	<canvas width="1200" height="700" #canvas [class.disabled]="!canDraw"></canvas>
 	<div class="choose-word-container" *ngIf="isChoosing">
