@@ -1,6 +1,6 @@
 <div class="chat" #chatContainer>
-	<div class="message" *ngFor="let m of chat">
-		<div class="name">{{ m.sender }}</div>
+	<div class="message" *ngFor="let m of chat" [class.guessed]="m.type === MessageType.GuessedMessage" [class.server]="m.type === MessageType.GameMessage">
+		<div class="name" *ngIf="m.sender">{{ m.sender }}</div>
 		<div class="content">{{ m.content }}</div>
 	</div>
 </div>

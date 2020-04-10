@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { Message } from '../model/Message';
+import { Message, MessageType } from '../model/Message';
 import { GameService } from '../services/game.service';
 
 @Component({
@@ -8,6 +8,8 @@ import { GameService } from '../services/game.service';
 	styleUrls: ['./chat-component.component.scss']
 })
 export class ChatComponentComponent implements OnInit {
+
+	MessageType = MessageType;
 
 	chat: Message[] = [];
 	playerName: string;
@@ -28,8 +30,22 @@ export class ChatComponentComponent implements OnInit {
 
 		this.game.playerGuessedWord$.subscribe(playerName => {
 			this.addMessage({
-				sender: 'SERVER',
-				content: `${playerName} GUESSED THE WORD`
+				content: `${playerName} guessed the word`,
+				type: MessageType.GuessedMessage
+			});
+		});
+
+		this.game.playerJoined$.subscribe(playerName => {
+			this.addMessage({
+				type: MessageType.GameMessage,
+				content: `${playerName} joined the game`
+			});
+		});
+
+		this.game.playerLeft$.subscribe(playerName => {
+			this.addMessage({
+				type: MessageType.GameMessage,
+				content: `${playerName} left the game`
 			});
 		});
 	}
@@ -45,6 +61,7 @@ export class ChatComponentComponent implements OnInit {
 		this.addMessage({
 			sender: this.playerName,
 			content: input.value,
+			type: MessageType.ChatMessage
 		});
 		await this.game.sendChatMessage(input.value);
 		input.value = '';
