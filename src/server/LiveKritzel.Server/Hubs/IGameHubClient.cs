@@ -19,7 +19,7 @@ namespace LiveKritzel.Server.Hubs
         Task PlayerGetTheWord(string name);
         Task StartChoosing(string[] words);
         Task RoundIsFinshed(string word);
-        Task NewRoundIsStarted(int wordcount, int duration);
+        Task NewRoundIsStarted(string word, int duration);
 
     }
 }

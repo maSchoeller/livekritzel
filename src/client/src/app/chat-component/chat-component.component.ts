@@ -9,17 +9,17 @@ import { GameService } from '../services/game.service';
 })
 export class ChatComponentComponent implements OnInit {
 
-	chat: Message[] = [
-		{
-			sender: 'Mario',
-			content: 'Hallooo Weeelt!'
-		}
-	];
+	chat: Message[] = [];
+	playerName: string;
 
 	@ViewChild('chatContainer')
 	chatContainer: ElementRef;
 
-	constructor(private game: GameService) { }
+	constructor(private game: GameService) {
+		this.game.playerName$ .subscribe((n) => {
+			this.playerName = n;
+		});
+	}
 
 	ngOnInit(): void {
 		this.game.chatMessage$.subscribe(m => {
@@ -36,7 +36,7 @@ export class ChatComponentComponent implements OnInit {
 
 	async sendMessage(input: HTMLInputElement) {
 		this.addMessage({
-			sender: 'Mario',
+			sender: this.playerName,
 			content: input.value,
 		});
 		await this.game.sendChatMessage(input.value);

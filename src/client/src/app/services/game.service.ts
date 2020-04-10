@@ -104,6 +104,7 @@ export class GameService {
 	public async startGame(name: string) {
 		await this.connection.start();
 		const players = await this.connection.invoke<string[]>('joinGame', name);
+		console.log('From join the game', players);
 		this.activePlayersSubject.next(players);
 		this.playerNameSubject.next(name);
 	}
