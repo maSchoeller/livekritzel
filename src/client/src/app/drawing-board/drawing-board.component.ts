@@ -196,12 +196,12 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 	}
 
 
-	public chooseWord(word: string) {
+	public async chooseWord(word: string) {
+		await this.game.chooseWord(word);
+		console.log('chose word: ', word);
 		this.isChoosing = false;
 		this.canDraw = true;
 		this.chosenWord = word;
-
-		this.game.chooseWord(word);
 	}
 
 }

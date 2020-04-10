@@ -23,6 +23,10 @@ export class PlayerListComponent implements OnInit {
 			this.players.splice(this.players.findIndex(p => p === player), 1);
 		});
 
+		this.game.activePlayers$.subscribe(players => {
+			this.players = players;
+		});
+
 		this.playerName = this.game.playerName$;
 	}
 }
