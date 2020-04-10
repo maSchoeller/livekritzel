@@ -42,7 +42,7 @@ export class GameService {
 	private playerLeftSubject = new Subject<string>();
 	public playerLeft$ = this.playerLeftSubject.asObservable();
 
-	private newRoundSubject = new Subject<{wordCount: number, duration: number}>();
+	private newRoundSubject = new Subject<{word: string, duration: number}>();
 	public newRound$ = this.newRoundSubject.asObservable();
 
 
@@ -95,8 +95,8 @@ export class GameService {
 		});
 
 
-		this.connection.on('newRoundIsStarted', (wordCount: number, duration: number) => {
-			this.newRoundSubject.next({ wordCount, duration });
+		this.connection.on('newRoundIsStarted', (word: string, duration: number) => {
+			this.newRoundSubject.next({ word, duration });
 		});
 	}
 

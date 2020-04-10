@@ -86,9 +86,15 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 			this.cx.fillRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
 		});
 
+		this.game.newRound$.subscribe(({word, duration}) => {
+			const mutedWord = word.replace(/\S/g, '-');
+			console.log('word is: ', mutedWord);
+			this.clear();
+		});
+
 		this.game.roundFinished$.subscribe(word => {
 			this.canDraw = false;
-			this.clear();
+			this.chosenWord = undefined;
 		});
 	}
 
