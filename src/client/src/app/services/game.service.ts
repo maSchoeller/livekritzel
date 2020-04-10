@@ -42,6 +42,9 @@ export class GameService {
 	private playerLeftSubject = new Subject<string>();
 	public playerLeft$ = this.playerLeftSubject.asObservable();
 
+	private playerGuessedWordSubject = new Subject<string>();
+	public playerGuessedWord$ = this.playerGuessedWordSubject.asObservable();
+
 	private newRoundSubject = new Subject<{word: string, duration: number}>();
 	public newRound$ = this.newRoundSubject.asObservable();
 
@@ -97,6 +100,11 @@ export class GameService {
 
 		this.connection.on('newRoundIsStarted', (word: string, duration: number) => {
 			this.newRoundSubject.next({ word, duration });
+		});
+
+
+		this.connection.on('playerGotTheWord', playerName => {
+			this.playerGuessedWordSubject.next(playerName);
 		});
 	}
 

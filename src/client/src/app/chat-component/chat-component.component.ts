@@ -25,6 +25,13 @@ export class ChatComponentComponent implements OnInit {
 		this.game.chatMessage$.subscribe(m => {
 			this.addMessage(m);
 		});
+
+		this.game.playerGuessedWord$.subscribe(playerName => {
+			this.addMessage({
+				sender: 'SERVER',
+				content: `${playerName} GUESSED THE WORD`
+			});
+		});
 	}
 
 
