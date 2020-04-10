@@ -64,14 +64,10 @@ namespace LiveKritzel.Server.Hubs
         public async Task<IEnumerable<string>> JoinGame(string name)
         {
             Context.Items["name"] = name;
-            if (_gameManager.Users.Count() == 2)
-                //Todo: maybe later solve concurrency problem.
-            {
-                _gameManager.StartGame();
-            }
+            _gameManager.PlayerJoinedTheGame(name, Context.ConnectionId);
             await Clients.Others.ReceivePlayerJoined(name)
                 .ConfigureAwait(false);
-            return _gameManager.Users;
+            return _gameManager.Users.Where(n => n != name).ToArray();
         }
 
         public void ChooseWord(string word)
@@ -85,6 +81,7 @@ namespace LiveKritzel.Server.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
+            _gameManager.PlayerLeftTheGame(Context.ConnectionId);
             await Clients.Others.ReceivePlayerLeft(GetName())
                .ConfigureAwait(false);
             //Todo: stop if the last player left the game

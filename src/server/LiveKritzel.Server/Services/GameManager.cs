@@ -22,7 +22,7 @@ namespace LiveKritzel.Server.Services
         private bool playerIsChoosing = false;
         public int RoundDuration { get; set; } = 80;
         public (string Name, string ConId) ActualPlayer { get; private set; }
-        public IEnumerable<string> Users => _users.Select(n => n.Name).ToArray();
+        public IEnumerable<string> Users => _users.Select(n => n.Name);
         public GameManager(IHubContext<GameHub> context, WordManager wordManager)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -46,7 +46,8 @@ namespace LiveKritzel.Server.Services
         public void PlayerJoinedTheGame(string name, string conId)
         {
             _users.Add((name, conId));
-            if (_users.Count == 1)
+            if (Users.Count() == 2)
+            //Todo: maybe later solve concurrency problem.
             {
                 StartGame();
             }
@@ -66,6 +67,7 @@ namespace LiveKritzel.Server.Services
         {
             _cts = new CancellationTokenSource();
             _actualDispatcher = new Task(GameLoop, _cts.Token, TaskCreationOptions.LongRunning);
+            _actualDispatcher.Start();
             //Start Game
         }
 
@@ -87,14 +89,16 @@ namespace LiveKritzel.Server.Services
             var rnd = new Random();
             while (!token.IsCancellationRequested)
             {
-
+                playerIsChoosing = true;
+                ActualPlayer = _users[rnd.Next(0, _users.Count - 1)];
+                await _context.Clients.Client(ActualPlayer.ConId).SendAsync("StartChoosing", _wordManager.GetWordsToChoose(3))
+                    .ConfigureAwait(false);
                 while (playerIsChoosing)
                 {
                     await Task.Delay(10)
                         .ConfigureAwait(false);
                 }
-
-                await _context.Clients.All.SendAsync("NewRoundIsStarted", _wordManager.ActualWord.Length, RoundDuration)
+                await _context.Clients.All.SendAsync("NewRoundIsStarted", _wordManager.ActualWord, RoundDuration)
                     .ConfigureAwait(false);
                 var i = RoundDuration;
                 for (int d = 0; d < i; d++)
@@ -106,24 +110,16 @@ namespace LiveKritzel.Server.Services
                     await Task.Delay(1000)
                         .ConfigureAwait(false);
                 }
-
-                await _context.Clients.All.SendAsync("ReceiveClearCanvas")
-                    .ConfigureAwait(false);
                 await _context.Clients.All.SendAsync("RoundIsFinshed", _wordManager.ActualWord)
                     .ConfigureAwait(false);
-                playerIsChoosing = true;
-                ActualPlayer = _users[rnd.Next(0, _users.Count - 1)];
-                await _context.Clients.Client(ActualPlayer.ConId).SendAsync("StartChoosing", _wordManager.GetWordsToChoose(3))
-                    .ConfigureAwait(false);
-
             }
 
         }
 
         public void Dispose()
         {
-            _cts.Dispose();
-            _actualDispatcher.Dispose();
+            _cts?.Dispose();
+            _actualDispatcher?.Dispose();
         }
     }
 

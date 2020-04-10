@@ -90,6 +90,10 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 			this.canDraw = false;
 			this.clear();
 		});
+		this.game.chooseWords$.subscribe((words) => {
+			this.words = words;
+			this.isChoosing = true;
+		});
 	}
 
 
