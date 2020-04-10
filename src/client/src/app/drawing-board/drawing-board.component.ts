@@ -90,7 +90,9 @@ export class DrawingBoardComponent implements OnInit, AfterViewInit {
 
 		this.game.newRound$.subscribe(({word, duration}) => {
 			const mutedWord = word.replace(/\S/g, '_');
-			this.chosenWord = undefined;
+			if (!this.canDraw) {
+				this.chosenWord = undefined;
+			}
 			this.guessWord = mutedWord;
 			this.clear();
 		});
