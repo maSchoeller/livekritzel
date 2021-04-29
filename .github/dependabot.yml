@@ -1,0 +1,34 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/src/server/LiveKritzel.Server"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  assignees:
+  - maSchoeller
+  ignore:
+  - dependency-name: Swashbuckle.AspNetCore
+    versions:
+    - 6.0.0
+    - 6.0.1
+    - 6.0.2
+    - 6.0.3
+    - 6.0.4
+    - 6.0.5
+    - 6.0.6
+    - 6.0.7
+    - 6.1.0
+    - 6.1.1
+    - 6.1.2
+  - dependency-name: Microsoft.Azure.SignalR
+    versions:
+    - 1.7.0
+    - 1.7.1
+    - 1.8.0
+  - dependency-name: Microsoft.AspNetCore.SpaServices.Extensions
+    versions:
+    - 5.0.2
+    - 5.0.3
+    - 5.0.4
